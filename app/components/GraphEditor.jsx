@@ -7,23 +7,35 @@ import ModeSelector from './ModeSelector';
 import GraphEditorControls from './GraphEditorControls.jsx';
 import AlgorithmControls from './AlgorithmControls';
 
+const CANVAS_SIZE = 100000; // Extremely large canvas size
+const INITIAL_OFFSET = CANVAS_SIZE / 2; // Center the initial view
+
 const GraphEditor = () => {
     // Mode and interaction states
     const [mode, setMode] = useState('edit');
     const [isAddingNodes, setIsAddingNodes] = useState(false);
     const [isRemovingNodes, setIsRemovingNodes] = useState(false);
+    const [isAddingEdge, setIsAddingEdge] = useState(false);
+    const [isRemovingEdge, setIsRemovingEdge] = useState(false);
 
     // Graph management hooks from context
-    const { 
-        nodes, 
-        edges, 
-        addNode, 
-        removeNode, 
-        updateNodePosition 
+    const {
+        nodes,
+        edges,
+        addNode,
+        removeNode,
+        updateNodePosition,
+        selectNodeForEdge,
+        selectedNodeForEdge,
+        resetEdgeSelection
     } = useGraph();
 
     // Canvas interaction states
-    const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 });
+    const [canvasOffset, setCanvasOffset] = useState({
+        x: -INITIAL_OFFSET,
+        y: -INITIAL_OFFSET
+    });
+
     const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
     const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
     const [isDraggingNode, setIsDraggingNode] = useState(null);
@@ -34,7 +46,7 @@ const GraphEditor = () => {
     // Get coordinates relative to the canvas, accounting for canvas offset
     const getRelativeCoordinates = useCallback((event) => {
         if (!editorRef.current) return { x: 0, y: 0 };
-        
+
         const rect = editorRef.current.getBoundingClientRect();
         return {
             x: event.clientX - rect.left - canvasOffset.x,
@@ -86,6 +98,12 @@ const GraphEditor = () => {
         });
     };
 
+    const handleNodeSelect = (node) => {
+        if (isAddingEdge) {
+            selectNodeForEdge(node.id);
+        }
+    };
+
     const handleNodeDragMove = (e) => {
         if (isDraggingNode) {
             const { x, y } = getRelativeCoordinates(e);
@@ -105,10 +123,16 @@ const GraphEditor = () => {
     useEffect(() => {
         setIsAddingNodes(false);
         setIsRemovingNodes(false);
+        setIsAddingEdge(false);
+        setIsRemovingEdge(false);
     }, [mode]);
 
+    useEffect(() => {
+        resetEdgeSelection();
+    }, [mode, isAddingEdge]);
+
     return (
-        <div 
+        <div
             className="flex h-full relative"
             onMouseMove={handleCanvasDragMove}
             onMouseUp={() => {
@@ -121,23 +145,42 @@ const GraphEditor = () => {
             }}
         >
             {/* Mode Selector */}
-            <ModeSelector 
-                mode={mode} 
-                onModeChange={(newMode) => setMode(newMode)} 
+            <ModeSelector
+                mode={mode}
+                onModeChange={(newMode) => setMode(newMode)}
             />
 
             {/* Mode-Specific Controls */}
             {mode === 'edit' && (
-                <GraphEditorControls 
+                <GraphEditorControls
                     isAddingNodes={isAddingNodes}
                     isRemovingNodes={isRemovingNodes}
+                    isRemovingEdge={isRemovingEdge}
+                    isAddingEdge={isAddingEdge}
+
                     onToggleAddNodes={() => {
                         setIsAddingNodes(!isAddingNodes);
                         setIsRemovingNodes(false);
+                        setIsAddingEdge(false);
+                        setIsRemovingEdge(false);
                     }}
                     onToggleRemoveNodes={() => {
                         setIsRemovingNodes(!isRemovingNodes);
                         setIsAddingNodes(false);
+                        setIsAddingEdge(false);
+                        setIsRemovingEdge(false);
+                    }}
+                    onToggleAddEdge={() => {
+                        setIsAddingEdge(!isAddingEdge);
+                        setIsAddingNodes(false);
+                        setIsRemovingEdge(false);
+                        setIsRemovingNodes(false);
+                    }}
+                    onToggleRemoveEdge={() => {
+                        setIsRemovingEdge(!isRemovingEdge);
+                        setIsAddingEdge(false);
+                        setIsRemovingNodes(false);
+                        setIsRemovingNodes(false);
                     }}
                 />
             )}
@@ -161,13 +204,13 @@ const GraphEditor = () => {
                     onClick={handleCanvasClick}
                 >
                     {/* Infinite Background Grid */}
-                    <div 
-                        className="absolute inset-0 opacity-20 bg-repeat"
+                    <div
+                        className="absolute opacity-20 bg-repeat"
                         style={{
                             backgroundImage: 'linear-gradient(to right, #4f4f4f 1px, transparent 1px), linear-gradient(to bottom, #4f4f4f 1px, transparent 1px)',
                             backgroundSize: '25px 25px',
-                            width: '2000px',
-                            height: '2000px',
+                            width: `${CANVAS_SIZE}px`,
+                            height: `${CANVAS_SIZE}px`,
                             position: 'absolute',
                             top: 0,
                             left: 0,
@@ -176,9 +219,9 @@ const GraphEditor = () => {
                     />
 
                     {/* Nodes with Canvas Offset Applied */}
-                    <div 
+                    <div
                         style={{
-                            position: 'absolute', 
+                            position: 'absolute',
                             transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`
                         }}
                         onMouseMove={handleNodeDragMove}
@@ -186,21 +229,20 @@ const GraphEditor = () => {
                         {nodes.map(node => (
                             <Node
                                 key={node.id}
-                                node={{
-                                    ...node,
-                                    x: node.x,
-                                    y: node.y
-                                }}
+                                node={{ ...node, x: node.x, y: node.y }}
                                 onDragStart={handleNodeDragStart}
                                 isRemovingMode={isRemovingNodes}
                                 onRemove={() => removeNode(node.id)}
+                                isAddingEdge={isAddingEdge}
+                                isSelectedForEdge={selectedNodeForEdge === node.id}
+                                onSelect={() => handleNodeSelect(node)}
                             />
                         ))}
                     </div>
 
                     {/* Edges (Placeholder rendering) */}
                     {edges.length > 0 && (
-                        <div 
+                        <div
                             className="absolute inset-0 pointer-events-none"
                             style={{
                                 transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`

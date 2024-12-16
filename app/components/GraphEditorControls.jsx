@@ -3,8 +3,12 @@ import React from 'react';
 const GraphEditorControls = ({ 
     isAddingNodes, 
     isRemovingNodes,
+    isAddingEdge,
+    isRemovingEdge,
     onToggleAddNodes, 
-    onToggleRemoveNodes 
+    onToggleRemoveNodes,
+    onToggleAddEdge,
+    onToggleRemoveEdge
 }) => {
     return (
         <div className="w-64 bg-gray-100 h-full p-4">
@@ -29,6 +33,26 @@ const GraphEditorControls = ({
                     }`}
                 >
                     {isRemovingNodes ? 'Stop Removing' : 'Remove Node'}
+                </button>
+                <button 
+                    onClick={onToggleAddEdge}
+                    className={`w-full px-4 py-2 rounded transition-colors ${
+                        isAddingEdge 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                    }`}
+                >
+                    {isAddingEdge ? 'Stop Adding Edge' : 'Add Edge'}
+                </button>
+                <button 
+                    onClick={onToggleRemoveEdge}
+                    className={`w-full px-4 py-2 rounded transition-colors ${
+                        isRemovingEdge 
+                        ? 'bg-red-500 text-white' 
+                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                    }`}
+                >
+                    {isRemovingEdge ? 'Stop Removing Edge' : 'Remove Edge'}
                 </button>
             </div>
         </div>

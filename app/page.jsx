@@ -18,11 +18,6 @@ export default function Home() {
           <div className="border-2 border-gray-300 rounded-lg">
             <GraphEditor />
           </div>
-          
-          {/* Algorithm Controls */}
-          {/* <div className="bg-gray-100 rounded-lg">
-            <AlgorithmControls />
-          </div> */}
         </main>
         
         <footer className="text-center text-sm text-gray-500">

@@ -3,15 +3,18 @@ import React, { createContext, useState, useContext } from 'react';
 const GraphContext = createContext();
 
 export const GraphProvider = ({ children }) => {
+  // State management for graph elements and interactions
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [selectedAlgorithm, setSelectedAlgorithm] = useState(null);
   const [idCounter, setIdCounter] = useState(0);
   const [edgeIdCounter, setEdgeIdCounter] = useState(0);
   
-  // New state for edge selection
-  const [selectedNodeForEdge, setSelectedNodeForEdge] = useState(null);
+  // State for tracking node selections during edge operations
+  const [selectedNodeForEdgeAddition, setSelectedNodeForEdgeAddition] = useState(null);
+  const [selectedNodeForEdgeDeletion, setSelectedNodeForEdgeDeletion] = useState(null);
 
+  // Add a new node to the graph
   const addNode = (x, y) => {
     const newNode = {
       id: `node-${nodes.length + 1}-${idCounter}`,
@@ -23,6 +26,7 @@ export const GraphProvider = ({ children }) => {
     return newNode.id;
   };
 
+  // Add an edge between two nodes
   const addEdge = (fromNodeId, toNodeId) => {
     // Prevent adding an edge to the same node
     if (fromNodeId === toNodeId) return;
@@ -43,11 +47,8 @@ export const GraphProvider = ({ children }) => {
     }
   };
 
-  const removeEdge = (edgeId) => {
-    setEdges(prev => prev.filter(edge => edge.id !== edgeId));
-  };
-
-  const removeEdgeByNodes = (fromNodeId, toNodeId) => {
+  // Remove an edge between two nodes
+  const removeEdge = (fromNodeId, toNodeId) => {
     setEdges(prev => 
       prev.filter(edge => 
         !(edge.from === fromNodeId && edge.to === toNodeId)
@@ -55,6 +56,7 @@ export const GraphProvider = ({ children }) => {
     );
   };
 
+  // Remove a node and its associated edges
   const removeNode = (nodeId) => {
     // Remove the node
     setNodes(prev => prev.filter(node => node.id !== nodeId));
@@ -65,6 +67,7 @@ export const GraphProvider = ({ children }) => {
     ));
   };
 
+  // Update the position of a node
   const updateNodePosition = (nodeId, x, y) => {
     setNodes(prev =>
       prev.map(node =>
@@ -75,24 +78,37 @@ export const GraphProvider = ({ children }) => {
     );
   };
 
-  // New method to handle node selection for edge creation
-  const selectNodeForEdge = (nodeId) => {
-    if (selectedNodeForEdge === null) {
+  // Handle node selection for edge addition
+  const selectNodeForEdgeAddition = (nodeId) => {
+    if (selectedNodeForEdgeAddition === null) {
       // First node selected
-      setSelectedNodeForEdge(nodeId);
+      setSelectedNodeForEdgeAddition(nodeId);
     } else {
       // Second node selected, create edge
-      addEdge(selectedNodeForEdge, nodeId);
+      addEdge(selectedNodeForEdgeAddition, nodeId);
       // Reset selected node
-      setSelectedNodeForEdge(null);
+      resetEdgeSelection();
+    }
+  };
+  
+  // Handle node selection for edge deletion
+  const selectNodeForEdgeDeletion = (nodeId) => {
+    if (selectedNodeForEdgeDeletion === null) {
+      // First node selected for edge deletion
+      setSelectedNodeForEdgeDeletion(nodeId);
+    } else {
+      // Second node selected, remove edge
+      removeEdge(selectedNodeForEdgeDeletion, nodeId);
+      // Reset selected node
+      resetEdgeSelection();
     }
   };
 
-  // Reset edge selection
+  // Reset edge selection state
   const resetEdgeSelection = () => {
-    setSelectedNodeForEdge(null);
+    setSelectedNodeForEdgeAddition(null);
+    setSelectedNodeForEdgeDeletion(null);
   };
-
 
   console.log(edges);
 
@@ -102,14 +118,15 @@ export const GraphProvider = ({ children }) => {
       edges,
       selectedAlgorithm,
       setSelectedAlgorithm,
-      selectedNodeForEdge,
+      selectedNodeForEdgeAddition,
+      selectedNodeForEdgeDeletion,
       addNode,
       removeNode,
       updateNodePosition,
       addEdge,
       removeEdge,
-      removeEdgeByNodes,
-      selectNodeForEdge,
+      selectNodeForEdgeAddition,
+      selectNodeForEdgeDeletion,
       resetEdgeSelection
     }}>
       {children}

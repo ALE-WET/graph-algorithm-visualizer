@@ -7,9 +7,11 @@ const Node = ({
   onRemove,
   isAddingEdge,
   isRemovingEdge,
-  isSelectedForEdge,
+  isSelectedForEdgeAddition,
+  isSelectedForEdgeDeletion,
   onSelect
 }) => {
+  // Handle different interactions based on current mode
   const handleMouseDown = (e) => {
     if (isRemovingMode) {
       // If in remove mode, trigger node removal
@@ -26,17 +28,30 @@ const Node = ({
   // Extract just the number from the node ID
   const nodeNumber = node.id.split('-')[1];
 
+  // Determine node background color based on current mode and selection
+  const getNodeBackground = () => {
+    if (isRemovingMode) {
+      return 'bg-red-500 hover:bg-red-600';
+    }
+    
+    if (isAddingEdge) {
+      return isSelectedForEdgeAddition 
+        ? 'bg-green-500 border-4 border-green-700' 
+        : 'bg-blue-500 hover:bg-blue-600';
+    }
+    
+    if (isRemovingEdge) {
+      return isSelectedForEdgeDeletion
+        ? 'bg-red-500 border-4 border-red-700'
+        : 'bg-blue-500 hover:bg-blue-600';
+    }
+    
+    return 'bg-blue-500 hover:bg-blue-600';
+  };
+
   return (
     <div
-      className={`absolute w-10 h-10 rounded-full cursor-move select-none text-black flex items-center justify-center ${
-        isRemovingMode
-          ? 'bg-red-500 hover:bg-red-600'
-          : isAddingEdge || isRemovingEdge
-            ? (isSelectedForEdge
-              ? 'bg-green-500'
-              : 'bg-blue-500 hover:bg-blue-600')
-            : 'bg-blue-500 hover:bg-blue-600'
-      }`}
+      className={`absolute w-10 h-10 rounded-full cursor-move select-none text-black flex items-center justify-center ${getNodeBackground()}`}
       style={{
         left: `${node.x}px`,
         top: `${node.y}px`

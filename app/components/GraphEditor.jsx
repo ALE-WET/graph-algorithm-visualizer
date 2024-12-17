@@ -56,12 +56,12 @@ const GraphEditor = () => {
 
     // Canvas dragging handlers
     const handleCanvasDragStart = useCallback((e) => {
-        // Prevent canvas drag if dragging a node
-        if (!isDraggingNode) {
+        // Prevent canvas drag if user is doing other things 
+        if (!isDraggingNode && !isAddingNodes && !isRemovingNodes && !isAddingEdge && !isRemovingEdge) {
             setIsDraggingCanvas(true);
             setLastMousePosition({ x: e.clientX, y: e.clientY });
         }
-    }, [isDraggingNode]);
+    }, [isDraggingNode, isAddingNodes, isRemovingNodes, isAddingEdge, isRemovingEdge]);
 
     const handleCanvasDragMove = useCallback((e) => {
         if (isDraggingCanvas && !isDraggingNode) {
@@ -102,6 +102,7 @@ const GraphEditor = () => {
         if (isAddingEdge) {
             selectNodeForEdge(node.id);
         }
+        // add edge removal
     };
 
     const handleNodeDragMove = (e) => {

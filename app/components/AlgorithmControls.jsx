@@ -11,7 +11,7 @@ const AlgorithmControls = () => {
   ];
 
   return (
-    <div className="p-4 bg-gray-100 h-full">
+    <div className="p-4 bg-gray-100 h-full border-l-4">
       <h2 className="text-xl mb-4 font-bold text-black text-center">Algorithms</h2>
       <div className="space-y-2">
         {algorithms.map(algo => (

@@ -11,7 +11,7 @@ const GraphEditorControls = ({
     onToggleRemoveEdge
 }) => {
     return (
-        <div className="w-64 bg-gray-100 h-full p-4">
+        <div className="w-64 bg-gray-100 h-full p-4 border-l-4">
             <h2 className="text-xl mb-4 font-bold text-black text-center">Graph Editing</h2>
             <div className="space-y-2">
                 <button 

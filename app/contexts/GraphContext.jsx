@@ -94,7 +94,7 @@ export const GraphProvider = ({ children }) => {
   };
 
 
-  console.log(edges)
+  console.log(edges);
 
   return (
     <GraphContext.Provider value={{

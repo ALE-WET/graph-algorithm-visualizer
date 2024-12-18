@@ -6,6 +6,7 @@ import Node from './Node';
 import ModeSelector from './ModeSelector';
 import GraphEditorControls from './GraphEditorControls';
 import AlgorithmControls from './AlgorithmControls';
+import Edge from './Edge.jsx';
 
 // Constants for canvas sizing and initial positioning
 const CANVAS_SIZE = 100000; // Extremely large canvas to allow extensive graph creation
@@ -203,14 +204,13 @@ const GraphEditor = () => {
             <div className="relative flex-grow overflow-hidden">
                 <div
                     ref={editorRef}
-                    className="absolute inset-0 border-2 border-gray-300 bg-gray-50 
-                               overflow-hidden cursor-move"
+                    className="absolute inset-0 border-2 border-gray-300 bg-gray-50 overflow-hidden cursor-move z-1"
                     onMouseDown={handleCanvasDragStart}
                     onClick={handleCanvasClick}
                 >
                     {/* Infinite Background Grid */}
                     <div
-                        className="absolute opacity-20 bg-repeat"
+                        className="absolute opacity-20 bg-repeat z-1"
                         style={{
                             backgroundImage: 'linear-gradient(to right, #4f4f4f 1px, transparent 1px), linear-gradient(to bottom, #4f4f4f 1px, transparent 1px)',
                             backgroundSize: '25px 25px',
@@ -224,6 +224,36 @@ const GraphEditor = () => {
                     />
 
                     {/* Nodes with Canvas Offset */}
+                    <div
+                        className="absolute inset-0 pointer-events-none z-0"
+                        style={{
+                            transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`
+                        }}
+                    >
+                        {edges.map(edge => {
+                            const fromNode = nodes.find(n => n.id === edge.from);
+                            const toNode = nodes.find(n => n.id === edge.to);
+
+                            if (!fromNode || !toNode) return null;
+
+                            return (
+                                <Edge
+                                    key={edge.id}
+                                    nodeFrom={{
+                                        x: fromNode.x + 20,  // Center offset
+                                        y: fromNode.y + 20
+                                    }}
+                                    nodeTo={{
+                                        x: toNode.x + 20,    // Center offset
+                                        y: toNode.y + 20
+                                    }}
+                                    edgeInformation={edge}
+                                />
+                            );
+                        })}
+                    </div>
+
+                    {/* Nodes with Canvas Offset - Now after edges */}
                     <div
                         style={{
                             position: 'absolute',
@@ -246,33 +276,6 @@ const GraphEditor = () => {
                             />
                         ))}
                     </div>
-
-                    {/* Edges Rendering */}
-                    <svg
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                            transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`
-                        }}
-                    >
-                        {edges.map(edge => {
-                            const fromNode = nodes.find(n => n.id === edge.from);
-                            const toNode = nodes.find(n => n.id === edge.to);
-                            
-                            if (!fromNode || !toNode) return null;
-                            
-                            return (
-                                <line
-                                    key={edge.id}
-                                    x1={fromNode.x + 20}
-                                    y1={fromNode.y + 20}
-                                    x2={toNode.x + 20}
-                                    y2={toNode.y + 20}
-                                    stroke="black"
-                                    strokeWidth="2"
-                                />
-                            );
-                        })}
-                    </svg>
                 </div>
             </div>
         </div>

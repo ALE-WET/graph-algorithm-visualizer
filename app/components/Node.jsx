@@ -33,25 +33,26 @@ const Node = ({
     if (isRemovingMode) {
       return 'bg-red-500 hover:bg-red-600';
     }
-    
+
     if (isAddingEdge) {
-      return isSelectedForEdgeAddition 
-        ? 'bg-green-500 border-4 border-green-700' 
+      return isSelectedForEdgeAddition
+        ? 'bg-green-500 border-4 border-green-700'
         : 'bg-blue-500 hover:bg-blue-600';
     }
-    
+
     if (isRemovingEdge) {
       return isSelectedForEdgeDeletion
         ? 'bg-red-500 border-4 border-red-700'
         : 'bg-blue-500 hover:bg-blue-600';
     }
-    
+
     return 'bg-blue-500 hover:bg-blue-600';
   };
 
   return (
     <div
-      className={`absolute w-10 h-10 rounded-full cursor-move select-none text-black flex items-center justify-center ${getNodeBackground()}`}
+      className={`absolute node-container w-10 h-10 z-10 rounded-full cursor-move select-none text-black flex items-center justify-center ${getNodeBackground()} 
+    before:absolute before:inset-[-0.5rem] before:z-[-1]`}
       style={{
         left: `${node.x}px`,
         top: `${node.y}px`

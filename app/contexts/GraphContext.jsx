@@ -9,13 +9,13 @@ export const GraphProvider = ({ children }) => {
   const [selectedAlgorithm, setSelectedAlgorithm] = useState(null);
   const [idCounter, setIdCounter] = useState(0);
   const [edgeIdCounter, setEdgeIdCounter] = useState(0);
-  
+
   // State for tracking node selections during edge operations
   const [selectedNodeForEdgeAddition, setSelectedNodeForEdgeAddition] = useState(null);
   const [selectedNodeForEdgeDeletion, setSelectedNodeForEdgeDeletion] = useState(null);
 
   // Add a new node to the graph
-  const addNode = (x, y) => {
+  const addNode = (x, y) => {  
     const newNode = {
       id: `node-${nodes.length + 1}-${idCounter}`,
       x,
@@ -28,29 +28,33 @@ export const GraphProvider = ({ children }) => {
 
   // Add an edge between two nodes
   const addEdge = (fromNodeId, toNodeId) => {
-    // Prevent adding an edge to the same node
+
     if (fromNodeId === toNodeId) return;
 
-    // Check if the edge already exists
     const edgeExists = edges.some(
       edge => (edge.from === fromNodeId && edge.to === toNodeId)
     );
 
     if (!edgeExists) {
-      const newEdge = { 
+      const newEdge = {
         id: `edge-${edgeIdCounter}`,
-        from: fromNodeId, 
-        to: toNodeId 
+        from: fromNodeId,
+        to: toNodeId
       };
       setEdgeIdCounter(prev => prev + 1);
       setEdges(prev => [...prev, newEdge]);
     }
   };
 
+  const clearGraph = () => {
+    setEdges([]);
+    setNodes([]);
+  }
+
   // Remove an edge between two nodes
   const removeEdge = (fromNodeId, toNodeId) => {
-    setEdges(prev => 
-      prev.filter(edge => 
+    setEdges(prev =>
+      prev.filter(edge =>
         !(edge.from === fromNodeId && edge.to === toNodeId)
       )
     );
@@ -90,7 +94,7 @@ export const GraphProvider = ({ children }) => {
       resetEdgeSelection();
     }
   };
-  
+
   // Handle node selection for edge deletion
   const selectNodeForEdgeDeletion = (nodeId) => {
     if (selectedNodeForEdgeDeletion === null) {
@@ -127,7 +131,8 @@ export const GraphProvider = ({ children }) => {
       removeEdge,
       selectNodeForEdgeAddition,
       selectNodeForEdgeDeletion,
-      resetEdgeSelection
+      resetEdgeSelection,
+      clearGraph
     }}>
       {children}
     </GraphContext.Provider>

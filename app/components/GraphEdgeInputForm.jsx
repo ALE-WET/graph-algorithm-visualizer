@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { useGraph } from '../contexts/GraphContext';
 
-const GraphEdgeInputForm = ({ onSubmit }) => {
+const CANVAS_SIZE = 100000;
+const INITIAL_OFFSET = CANVAS_SIZE / 2;
+
+const GraphEdgeInputForm = ({
+    onSubmit,
+    rectSize,
+    getRectSize
+}) => {
     const [inputValue, setInputValue] = useState('');
     const [error, setError] = useState('');
 
@@ -13,29 +20,65 @@ const GraphEdgeInputForm = ({ onSubmit }) => {
         clearGraph
     } = useGraph();
 
-
     const createGraphFromInput = (input) => {
-
-};
-
+        // Clear existing graph first
+        clearGraph();
+    
+        const lines = input.split('\n').filter(line => line.trim());
+        const numberOfNodes = parseInt(lines[0]);
+    
+        if (isNaN(numberOfNodes) || numberOfNodes <= 0) {
+            throw new Error('First line must be a positive number indicating the number of nodes');
+        }
+    
+        // Get rect size if needed, but don't make node creation dependent on it
+        if (rectSize.left === undefined) {
+            getRectSize();
+        }
+    
+        // Create nodes in a single pass
+        const nodePositions = [];
+        for (let i = 0; i < numberOfNodes; i++) {
+            const finalX = INITIAL_OFFSET + Math.random() * 500;
+            const finalY = INITIAL_OFFSET + Math.random() * 500;
+            
+            // Only add the node once
+            addNode(finalX, finalY);
+        }
+    
+        // Process edges after nodes are created
+        for (let i = 1; i < lines.length; i++) {
+            const [from, to] = lines[i].split(',').map(num => parseInt(num.trim()));
+            if (from <= numberOfNodes && to <= numberOfNodes && from > 0 && to > 0) {
+                const fromNodeId = `node-${from - 1}`;
+                const toNodeId = `node-${to - 1}`;
+                addEdge(fromNodeId, toNodeId);
+            }
+        }
+    };
 
     const validateAndParseInput = (input) => {
-        const inputEdges = input.split('\n').filter(line => line.trim());
+        const inputLines = input.split('\n').filter(line => line.trim());
 
         try {
-            const parsedEdges = inputEdges.map(edge => {
+            // First line should be number of nodes
+            const numberOfNodes = parseInt(inputLines[0]);
+            if (isNaN(numberOfNodes) || numberOfNodes <= 0) {
+                throw new Error('First line must be a positive number indicating the number of nodes');
+            }
+
+            // Parse remaining lines as edges
+            const parsedEdges = inputLines.slice(1).map((edge, index) => {
                 const [from, to] = edge.split(',').map(num => {
                     const parsed = parseInt(num.trim());
-                    if (isNaN(parsed)) {
-                        throw new Error(`Invalid number: ${num}`);
+                    if (isNaN(parsed) || parsed <= 0 || parsed > numberOfNodes) {
+                        throw new Error(`Invalid node number in edge ${index + 1}: ${num}`);
                     }
                     return parsed;
                 });
-                if (from === undefined || to === undefined) {
-                    throw new Error('Each edge must have both a source and target node.');
-                }
                 return [from, to];
             });
+
             return parsedEdges;
         } catch (err) {
             throw new Error(err.message || 'Invalid input format. Please check the example format below.');
@@ -47,19 +90,19 @@ const GraphEdgeInputForm = ({ onSubmit }) => {
         setError('');
 
         try {
+            // Validate input first
             const parsedEdges = validateAndParseInput(inputValue);
+            // If validation passes, create the graph
+            createGraphFromInput(inputValue);
             onSubmit(parsedEdges);
         } catch (err) {
             setError(err.message);
         }
-
-        createGraphFromInput(inputValue);
-
     };
 
+    // Rest of the component remains the same...
     return (
         <div className="w-64 bg-gray-100 p-4 border-l-4">
-            <h2 className="text-xl mb-4 font-bold text-black text-center">Graph Input</h2>
             <form onSubmit={handleSubmit} className="space-y-4 text-black">
                 <div>
                     <label
@@ -76,7 +119,7 @@ const GraphEdgeInputForm = ({ onSubmit }) => {
                                  focus:outline-none focus:ring-2 focus:ring-blue-500 
                                  focus:border-blue-500 transition-colors min-h-[120px]
                                  font-mono text-sm"
-                        placeholder="1,2"
+                        placeholder="3&#10;2,1&#10;1,2&#10;3,1"
                     />
                 </div>
 
@@ -88,11 +131,12 @@ const GraphEdgeInputForm = ({ onSubmit }) => {
 
                 <div className="text-xs text-gray-600 mt-2">
                     <p className="font-medium mb-1">Format:</p>
-                    <p>• Each line represents one edge</p>
-                    <p>• Format: from,to (numbers only)</p>
+                    <p>• First line: number of nodes</p>
+                    <p>• Each following line: from,to (numbers only)</p>
+                    <p>• Node numbers start from 1</p>
                     <p>• Example:</p>
                     <pre className="bg-gray-200 p-1 rounded mt-1">
-                        1,2{'\n'}2,1{'\n'}3,1
+                        3{'\n'}1,2{'\n'}2,1{'\n'}3,1
                     </pre>
                 </div>
 

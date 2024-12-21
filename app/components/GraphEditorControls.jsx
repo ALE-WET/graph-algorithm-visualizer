@@ -9,7 +9,9 @@ const GraphEditorControls = ({
     onToggleAddNodes,
     onToggleRemoveNodes,
     onToggleAddEdge,
-    onToggleRemoveEdge
+    onToggleRemoveEdge,
+    rectSize,
+    getRectSize
 }) => {
     return (
         <div className="w-80 bg-gray-100 h-full p-4 border-l-4">
@@ -52,11 +54,11 @@ const GraphEditorControls = ({
                     {isRemovingEdge ? 'Stop Removing Edge' : 'Remove Edge'}
                 </button>
 
-                <GraphEdgeInputForm onSubmit={(edges) => {
-                    // edges will be an array of arrays, like: [[0,1], [1,2], [2,3]]
-                    console.log('Graph edges:', edges);
-                    // Use these edges to create your graph
-                }} />
+                <GraphEdgeInputForm 
+                onSubmit={(edges) => {}}
+                rectSize = {rectSize}
+                getRectSize = {getRectSize}
+                />
 
             </div>
         </div>

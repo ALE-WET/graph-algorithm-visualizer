@@ -19,6 +19,7 @@ const GraphEditor = () => {
     const [isRemovingNodes, setIsRemovingNodes] = useState(false);
     const [isAddingEdge, setIsAddingEdge] = useState(false);
     const [isRemovingEdge, setIsRemovingEdge] = useState(false);
+    const [rectSize, setRectSize] = useState({ x: 0, y: 0 });
 
     // Utilize the graph context for managing graph state and operations
     const {
@@ -39,6 +40,7 @@ const GraphEditor = () => {
         x: -INITIAL_OFFSET,
         y: -INITIAL_OFFSET
     });
+
     const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
     const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
     const [isDraggingNode, setIsDraggingNode] = useState(null);
@@ -51,11 +53,21 @@ const GraphEditor = () => {
         if (!editorRef.current) return { x: 0, y: 0 };
 
         const rect = editorRef.current.getBoundingClientRect();
+        
+        setRectSize(rect);
+
+        console.log("rect", rect);
+
         return {
             x: event.clientX - rect.left - canvasOffset.x,
             y: event.clientY - rect.top - canvasOffset.y
         };
     }, [canvasOffset]);
+
+    const getRectSize = () => {
+        const rect = editorRef.current.getBoundingClientRect();
+        setRectSize(rect);
+    }
 
     // Canvas Dragging Handlers
     const handleCanvasDragStart = useCallback((e) => {
@@ -195,6 +207,8 @@ const GraphEditor = () => {
                     onToggleRemoveNodes={() => toggleMode('removeNodes')}
                     onToggleAddEdge={() => toggleMode('addEdge')}
                     onToggleRemoveEdge={() => toggleMode('removeEdge')}
+                    rectSize = {rectSize}
+                    getRectSize = {() => getRectSize()}
                 />
             )}
 

@@ -7,7 +7,7 @@ export const GraphProvider = ({ children }) => {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [selectedAlgorithm, setSelectedAlgorithm] = useState(null);
-  const [idCounter, setIdCounter] = useState(0);
+  const [nodeIdCounter, setNodeIdCounter] = useState(0);
   const [edgeIdCounter, setEdgeIdCounter] = useState(0);
 
   // State for tracking node selections during edge operations
@@ -15,15 +15,16 @@ export const GraphProvider = ({ children }) => {
   const [selectedNodeForEdgeDeletion, setSelectedNodeForEdgeDeletion] = useState(null);
 
   // Add a new node to the graph
-  const addNode = (x, y) => {  
-    const newNode = {
-      id: `node-${nodes.length + 1}-${idCounter}`,
-      x,
-      y
-    };
-    setIdCounter(prev => prev + 1);
-    setNodes(prev => [...prev, newNode]);
-    return newNode.id;
+  const addNode = (x, y) => {
+    setNodeIdCounter(prev => {
+      const newNode = {
+        id: `node-${prev}`,
+        x,
+        y
+      };
+      setNodes(existing => [...existing, newNode]);
+      return prev + 1;
+    });
   };
 
   // Add an edge between two nodes
@@ -49,6 +50,8 @@ export const GraphProvider = ({ children }) => {
   const clearGraph = () => {
     setEdges([]);
     setNodes([]);
+    setNodeIdCounter(0);
+    setEdgeIdCounter(0);
   }
 
   // Remove an edge between two nodes
@@ -114,7 +117,8 @@ export const GraphProvider = ({ children }) => {
     setSelectedNodeForEdgeDeletion(null);
   };
 
-  console.log(edges);
+  console.log("edges", edges);
+  console.log("Nodes", nodes);
 
   return (
     <GraphContext.Provider value={{

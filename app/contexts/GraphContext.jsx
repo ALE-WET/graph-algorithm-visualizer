@@ -29,21 +29,28 @@ export const GraphProvider = ({ children }) => {
 
   // Add an edge between two nodes
   const addEdge = (fromNodeId, toNodeId) => {
-
+    // First, prevent self-loops
     if (fromNodeId === toNodeId) return;
 
+    // Check if edge already exists
     const edgeExists = edges.some(
       edge => (edge.from === fromNodeId && edge.to === toNodeId)
     );
 
+    // Only create new edge if it doesn't exist
     if (!edgeExists) {
-      const newEdge = {
-        id: `edge-${edgeIdCounter}`,
-        from: fromNodeId,
-        to: toNodeId
-      };
-      setEdgeIdCounter(prev => prev + 1);
-      setEdges(prev => [...prev, newEdge]);
+      setEdgeIdCounter(prev => {
+        // Create new edge using the current edge counter
+        const newEdge = {
+          id: `edge-${prev}`,
+          from: fromNodeId,
+          to: toNodeId
+        };
+        // Update edges array with the new edge
+        setEdges(existing => [...existing, newEdge]);
+        // Return incremented counter
+        return prev + 1;
+      });
     }
   };
 
